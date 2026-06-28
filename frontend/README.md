@@ -1,42 +1,28 @@
-# frontend
+# EduVaga 🎓
 
-This template should help get you started developing with Vue 3 in Vite.
+**"Sua próxima oportunidade está aqui"**
 
-## Recommended IDE Setup
+EduVaga é uma rede social criada para compartilhar vagas em cursos gratuitos de instituições públicas do Brasil. O projeto foi desenvolvido como desafio fullstack, sendo minha primeira experiência construindo uma aplicação completa do frontend até o banco de dados.
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+---
 
-## Recommended Browser Setup
+## 🚀 Tecnologias Utilizadas
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+**Frontend**
+- Vue.js 3
+- TypeScript
+- Axios
+- Vite
 
-## Type Support for `.vue` Imports in TS
+**Backend**
+- Node.js
+- TypeScript
+- Express
+- Prisma ORM
+- SQLite
+- JWT (autenticação)
+- Bcryptjs (criptografia de senha)
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+---
 
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
+## 📁 Estrutura do Projeto
