@@ -1,7 +1,7 @@
 <template>
   <div class="nivel-container">
     <header class="navbar">
-      <img src="/logo.png.png" alt="EduVaga" class="logo" @click="router.push('/modalidade')" />
+      <img src="/logo.png" alt="EduVaga" class="logo" @click="router.push('/modalidade')" />
       <div class="nav-info">
         <span class="modalidade-badge">{{ modalidade }}</span>
         <button @click="router.push('/modalidade')">Tela Inicial</button>

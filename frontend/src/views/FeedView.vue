@@ -1,8 +1,8 @@
 <template>
-  <div class="feed-container">
+  <div class="publicacoes-container">
     <header class="navbar">
       <div class="logo-area" @click="router.push('/modalidade')">
-        <img src="/logo.eduvaga.png" alt="EduVaga" class="logo-nav" />
+        <img src="/logo.png" alt="EduVaga" class="logo-nav" />
       </div>
       <div class="nav-right">
         <button :class="{ active: route.path === '/modalidade' }" @click="router.push('/modalidade')">
@@ -29,137 +29,94 @@
     </header>
 
     <div class="content">
-      <div class="new-post">
-        <h3>Compartilhar uma vaga</h3>
-        <textarea v-model="postContent" placeholder="Descreva a vaga (curso, instituição, prazo...)"></textarea>
-        <input v-model="officialUrl" type="url" placeholder="Link oficial da instituição (obrigatório)" />
-        <div class="selects">
-          <select v-model="postModalidade">
-            <option value="">Selecione a modalidade</option>
-            <option value="Presencial">Presencial</option>
-            <option value="Semipresencial">Semipresencial</option>
-            <option value="EAD">EAD</option>
-          </select>
-          <select v-model="postNivel">
-            <option value="">Selecione o nível</option>
-            <option v-for="nivel in niveis" :key="nivel" :value="nivel">{{ nivel }}</option>
-          </select>
+      <h2 class="page-title">Publicações</h2>
+      <div class="filters">
+        <input v-model="search" type="text" placeholder="🔍 Buscar por palavra-chave..." class="search-input" />
+        <div class="filter-row">
+          <select v-model="filtroModalidade"><option value="">Todas as modalidades</option><option value="Presencial">Presencial</option><option value="Semipresencial">Semipresencial</option><option value="EAD">EAD</option></select>
+          <select v-model="filtroNivel"><option value="">Todos os níveis</option><option v-for="nivel in niveis" :key="nivel" :value="nivel">{{ nivel }}</option></select>
+          <select v-model="ordenar"><option value="recentes">Mais recentes</option><option value="antigas">Mais antigas</option></select>
         </div>
-        <button class="btn-publicar" @click="createPost">Publicar</button>
       </div>
 
-      <div class="posts">
-        <div v-if="posts.length === 0" class="empty">
-          <p>Nenhuma vaga encontrada para este filtro.</p>
-          <button @click="router.push('/modalidade')">Trocar filtro</button>
-        </div>
-        <div v-for="post in posts" :key="post.id" class="post-card">
-          <div class="post-header">
-            <div class="post-avatar">{{ post.user.name?.charAt(0).toUpperCase() }}</div>
-            <div class="post-meta">
-              <strong>{{ post.user.name }}</strong>
-              <span>{{ formatDate(post.createdAt) }}</span>
-            </div>
-          </div>
-          <div class="post-tags" v-if="post.modalidade || post.nivel">
-            <span class="tag tag-blue" v-if="post.modalidade">{{ post.modalidade }}</span>
-            <span class="tag tag-purple" v-if="post.nivel">{{ post.nivel }}</span>
-          </div>
-          <p class="post-content">{{ post.content }}</p>
-          <a :href="post.officialUrl" target="_blank" class="post-link">{{ extractDomain(post.officialUrl) }}</a>
-          <div class="post-actions">
-            <button class="btn-like" @click="likePost(post)">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              {{ post.likes.length }}
-            </button>
-            <span class="btn-comment">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              {{ post.comments.length }} comentários
-            </span>
-          </div>
-          <div class="share-section">
-            <p class="share-label">Compartilhar:</p>
-            <div class="share-buttons">
-              <a :href="'https://wa.me/?text=' + encodeURIComponent(post.content + ' ' + post.officialUrl)" target="_blank" class="share-btn"><span class="share-dot" style="background:#25D366"></span>WhatsApp</a>
-              <a :href="'https://t.me/share/url?url=' + encodeURIComponent(post.officialUrl)" target="_blank" class="share-btn"><span class="share-dot" style="background:#0088cc"></span>Telegram</a>
-              <a :href="'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(post.officialUrl)" target="_blank" class="share-btn"><span class="share-dot" style="background:#1877F2"></span>Facebook</a>
-              <a :href="'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(post.officialUrl)" target="_blank" class="share-btn"><span class="share-dot" style="background:#0A66C2"></span>LinkedIn</a>
-              <a :href="'https://twitter.com/intent/tweet?text=' + encodeURIComponent(post.content) + '&url=' + encodeURIComponent(post.officialUrl)" target="_blank" class="share-btn"><span class="share-dot" style="background:#1DA1F2"></span>Twitter/X</a>
-            </div>
-          </div>
-          <div class="comments">
-            <div v-for="comment in post.comments" :key="comment.id" class="comment">
-              <strong>{{ comment.user.name }}:</strong> {{ comment.content }}
-            </div>
-            <div class="add-comment">
-              <input v-model="newComments[post.id]" placeholder="Comentar..." />
-              <button @click="addComment(post.id)">Enviar</button>
-            </div>
+      <div v-if="postsFiltrados.length === 0" class="empty"><p>Nenhuma publicação encontrada.</p></div>
+
+      <div v-for="post in postsPaginados" :key="post.id" class="post-card">
+        <div class="post-header">
+          <div class="post-avatar">{{ post.user.name?.charAt(0).toUpperCase() }}</div>
+          <div class="post-meta">
+            <strong>{{ post.user.name }}</strong>
+            <span>{{ formatDate(post.createdAt) }}</span>
           </div>
         </div>
+        <div class="post-tags">
+          <span class="tag tag-blue" v-if="post.modalidade">{{ post.modalidade }}</span>
+          <span class="tag tag-purple" v-if="post.nivel">{{ post.nivel }}</span>
+        </div>
+        <p class="post-content">{{ post.content }}</p>
+        <a :href="post.officialUrl" target="_blank" class="post-link">{{ extractDomain(post.officialUrl) }}</a>
+        <div class="share-section">
+          <p class="share-label">Compartilhar:</p>
+          <div class="share-buttons">
+            <a :href="'https://wa.me/?text=' + encodeURIComponent(post.content + ' ' + post.officialUrl)" target="_blank" class="share-btn"><span class="share-dot" style="background:#25D366"></span>WhatsApp</a>
+            <a :href="'https://t.me/share/url?url=' + encodeURIComponent(post.officialUrl)" target="_blank" class="share-btn"><span class="share-dot" style="background:#0088cc"></span>Telegram</a>
+            <a :href="'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(post.officialUrl)" target="_blank" class="share-btn"><span class="share-dot" style="background:#1877F2"></span>Facebook</a>
+            <a :href="'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(post.officialUrl)" target="_blank" class="share-btn"><span class="share-dot" style="background:#0A66C2"></span>LinkedIn</a>
+            <a :href="'https://twitter.com/intent/tweet?text=' + encodeURIComponent(post.content) + '&url=' + encodeURIComponent(post.officialUrl)" target="_blank" class="share-btn"><span class="share-dot" style="background:#1DA1F2"></span>Twitter/X</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pagination" v-if="postsFiltrados.length > porPagina">
+        <button @click="pagina--" :disabled="pagina === 1">← Anterior</button>
+        <span>Página {{ pagina }} de {{ totalPaginas }}</span>
+        <button @click="pagina++" :disabled="pagina === totalPaginas">Próxima →</button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 
-interface Comment { id: number; content: string; user: { name: string } }
-interface Post { id: number; content: string; officialUrl: string; modalidade: string; nivel: string; createdAt: string; user: { name: string }; likes: any[]; comments: Comment[] }
-
 const router = useRouter()
 const route = useRoute()
-const posts = ref<Post[]>([])
-const postContent = ref('')
-const officialUrl = ref('')
-const postModalidade = ref('')
-const postNivel = ref('')
-const newComments = ref({} as Record<number, string>)
 const user = JSON.parse(localStorage.getItem('user') || '{}')
-const modalidadeFiltro = localStorage.getItem('modalidade') || ''
-const nivelFiltro = localStorage.getItem('nivel') || ''
-const API = 'http://localhost:3000'
-
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const posts = ref<any[]>([])
+const search = ref('')
+const filtroModalidade = ref('')
+const filtroNivel = ref('')
+const ordenar = ref('recentes')
+const pagina = ref(1)
+const porPagina = 5
 const niveis = ['Curso Livre / FIC','Aprendizagem Profissional','Curso Técnico','Curso Tecnólogo','Graduação','Curso de Extensão','Pós-Graduação Lato Sensu','Residência','Mestrado','Doutorado','Pós-Doutorado']
 
-const loadFeed = async () => {
-  const params: any = {}
-  if (modalidadeFiltro) params.modalidade = modalidadeFiltro
-  if (nivelFiltro) params.nivel = nivelFiltro
-  const res = await axios.get(`${API}/feed`, { params })
+const loadPosts = async () => {
+  const res = await axios.get(`${API}/feed`)
   posts.value = res.data
 }
 
-const createPost = async () => {
-  if (!postContent.value || !officialUrl.value) return alert('Preencha todos os campos!')
-  await axios.post(`${API}/posts`, { content: postContent.value, officialUrl: officialUrl.value, modalidade: postModalidade.value, nivel: postNivel.value, userId: user.id })
-  postContent.value = ''; officialUrl.value = ''; postModalidade.value = ''; postNivel.value = ''
-  loadFeed()
-}
+const postsFiltrados = computed(() => {
+  let r = posts.value
+  if (search.value) { const q = search.value.toLowerCase(); r = r.filter(p => p.content?.toLowerCase().includes(q) || p.user?.name?.toLowerCase().includes(q)) }
+  if (filtroModalidade.value) r = r.filter(p => p.modalidade === filtroModalidade.value)
+  if (filtroNivel.value) r = r.filter(p => p.nivel === filtroNivel.value)
+  return [...r].sort((a, b) => ordenar.value === 'recentes' ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+})
 
-const likePost = async (post: Post) => {
-  await axios.post(`${API}/posts/like`, { postId: post.id, userId: user.id })
-  loadFeed()
-}
-
-const addComment = async (postId: number) => {
-  if (!newComments.value[postId]) return
-  await axios.post(`${API}/posts/comment`, { content: newComments.value[postId], postId, userId: user.id })
-  newComments.value[postId] = ''
-  loadFeed()
-}
-
+const totalPaginas = computed(() => Math.ceil(postsFiltrados.value.length / porPagina))
+const postsPaginados = computed(() => { const i = (pagina.value - 1) * porPagina; return postsFiltrados.value.slice(i, i + porPagina) })
 const extractDomain = (url: string) => { try { return new URL(url).hostname } catch { return url } }
 const formatDate = (date: string) => new Date(date).toLocaleDateString('pt-BR')
 const logout = () => { localStorage.clear(); router.push('/') }
-onMounted(loadFeed)
+onMounted(loadPosts)
 </script>
 
 <style scoped>
-.feed-container { min-height: 100vh; background: #f0f4f8; }
+.publicacoes-container { min-height: 100vh; background: #f0f4f8; }
 .navbar { background: #1e40af; padding: 0.9rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
 .logo-area { cursor: pointer; display: flex; align-items: center; }
 .logo-nav { height: 32px; width: auto; filter: brightness(0) invert(1); }
@@ -169,16 +126,12 @@ onMounted(loadFeed)
 .nav-right button.active { background: white; color: #1e40af; font-weight: 500; }
 .btn-sair { background: rgba(255,255,255,0.06) !important; color: rgba(255,255,255,0.65) !important; font-size: 12px !important; }
 .content { max-width: 700px; margin: 2rem auto; padding: 0 1rem; }
-.new-post { background: white; padding: 1.5rem; border-radius: 16px; margin-bottom: 1.5rem; border: 2px solid #2563eb; }
-.new-post h3 { color: #1e3a5f; margin-bottom: 1rem; font-size: 1rem; }
-textarea { width: 100%; height: 80px; padding: 0.75rem; border: 1.5px solid #e2e8f0; border-radius: 10px; margin: 0.5rem 0; box-sizing: border-box; resize: none; font-family: inherit; font-size: 0.9rem; }
-textarea:focus { outline: none; border-color: #2563eb; }
-input { width: 100%; padding: 0.75rem; border: 1.5px solid #e2e8f0; border-radius: 10px; margin: 0.5rem 0; box-sizing: border-box; font-size: 0.9rem; }
-input:focus { outline: none; border-color: #2563eb; }
-.selects { display: flex; gap: 0.75rem; margin: 0.5rem 0; flex-wrap: wrap; }
-select { flex: 1; min-width: 140px; padding: 0.75rem; border: 1.5px solid #e2e8f0; border-radius: 10px; background: white; color: #333; font-size: 0.9rem; cursor: pointer; }
-.btn-publicar { padding: 0.6rem 1.5rem; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 500; margin-top: 0.5rem; transition: background 0.2s; }
-.btn-publicar:hover { background: #1e40af; }
+.page-title { text-align: center; color: #1e3a5f; margin-bottom: 1.5rem; font-size: 1.5rem; font-weight: 600; }
+.filters { background: white; padding: 1.25rem; border-radius: 16px; margin-bottom: 1.5rem; border: 2px solid #2563eb; }
+.search-input { width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 0.9rem; box-sizing: border-box; margin-bottom: 0.75rem; }
+.search-input:focus { outline: none; border-color: #2563eb; }
+.filter-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.filter-row select { flex: 1; min-width: 130px; padding: 0.65rem; border: 1.5px solid #e2e8f0; border-radius: 10px; background: white; color: #333; font-size: 0.85rem; cursor: pointer; }
 .post-card { background: white; padding: 1.5rem; border-radius: 16px; margin-bottom: 1rem; border: 2px solid #2563eb; }
 .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.75rem; }
 .post-avatar { width: 36px; height: 36px; background: #dbeafe; color: #1e40af; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; flex-shrink: 0; }
@@ -190,29 +143,22 @@ select { flex: 1; min-width: 140px; padding: 0.75rem; border: 1.5px solid #e2e8f
 .tag-blue { background: #dbeafe; color: #1e40af; }
 .tag-purple { background: #ede9fe; color: #5b21b6; }
 .post-content { color: #374151; font-size: 0.9rem; line-height: 1.6; margin-bottom: 0.5rem; }
-.post-link { color: #2563eb; font-size: 0.85rem; display: block; margin: 0.5rem 0; word-break: break-all; }
-.post-actions { display: flex; gap: 1rem; margin-top: 0.75rem; align-items: center; flex-wrap: wrap; }
-.btn-like { display: flex; align-items: center; gap: 5px; padding: 5px 12px; background: none; color: #64748b; border: 1.5px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
-.btn-like:hover { border-color: #e11d48; color: #e11d48; }
-.btn-comment { display: flex; align-items: center; gap: 5px; color: #64748b; font-size: 0.85rem; }
+.post-link { color: #2563eb; font-size: 0.85rem; display: block; margin: 0.5rem 0 1rem; word-break: break-all; }
 .share-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f1f5f9; }
 .share-label { font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.5rem; }
 .share-buttons { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .share-btn { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: 0.78rem; color: #374151; text-decoration: none; background: #f8fafc; transition: all 0.2s; }
 .share-btn:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
 .share-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-.comments { margin-top: 1rem; }
-.comment { padding: 0.5rem 0.75rem; background: #f8fafc; border-radius: 8px; margin-bottom: 0.5rem; font-size: 0.88rem; color: #374151; }
-.add-comment { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-.add-comment input { margin: 0; }
-.add-comment button { white-space: nowrap; padding: 0.6rem 1rem; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
-.empty { text-align: center; padding: 3rem; background: white; border-radius: 16px; border: 2px solid #2563eb; }
-.empty p { color: #64748b; margin-bottom: 1rem; }
-.empty button { padding: 0.6rem 1.5rem; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; }
+.pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1.5rem; padding-bottom: 2rem; flex-wrap: wrap; }
+.pagination button { padding: 0.5rem 1rem; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; }
+.pagination button:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+.pagination span { color: #64748b; font-size: 0.9rem; }
+.empty { text-align: center; padding: 3rem; background: white; border-radius: 16px; border: 2px solid #2563eb; color: #64748b; }
 @media (max-width: 480px) {
   .navbar { padding: 0.75rem 1rem; }
-  .new-post { padding: 1rem; }
+  .filters { padding: 1rem; }
   .post-card { padding: 1rem; }
-  .selects { flex-direction: column; }
+  .filter-row select { min-width: 100%; }
 }
 </style>

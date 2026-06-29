@@ -2,7 +2,7 @@
   <div class="modalidade-container">
     <header class="navbar">
       <div class="logo-area" @click="router.push('/modalidade')">
-        <img src="/logo.eduvaga.png" alt="EduVaga" class="logo-nav" />
+        <img src="/logo.png" alt="EduVaga" class="logo-nav" />
       </div>
       <div class="nav-right">
         <button :class="{ active: route.path === '/modalidade' }" @click="router.push('/modalidade')">
