@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { register, login, getProfile } from './controllers/userController';
+import { register, login, getProfile, forgotPassword, resetPassword } from './controllers/userController';
 import { createPost, getFeed, likePost, commentPost } from './controllers/postController';
 import { followUser } from './controllers/followController';
 
@@ -14,6 +14,8 @@ app.use(express.json());
 // Rotas de usuário
 app.post('/auth/register', register);
 app.post('/auth/login', login);
+app.post('/auth/forgot-password', forgotPassword);
+app.post('/auth/reset-password', resetPassword);
 app.get('/users/:id', getProfile);
 
 // Rotas de posts

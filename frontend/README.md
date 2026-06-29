@@ -1,6 +1,6 @@
 # EduVaga 🎓
 
-**"Sua próxima oportunidade está aqui"**
+**"Aprender nunca foi tão acessível. Descubra sua vaga."**
 
 EduVaga é uma rede social criada para compartilhar vagas em cursos gratuitos de instituições públicas do Brasil. O projeto foi desenvolvido como desafio fullstack, sendo minha primeira experiência construindo uma aplicação completa do frontend até o banco de dados.
 

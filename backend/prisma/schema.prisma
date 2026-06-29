@@ -8,24 +8,28 @@ datasource db {
 }
 
 model User {
-  id           Int       @id @default(autoincrement())
-  name         String
-  email        String    @unique
-  passwordHash String
-  bio          String?
-  avatarUrl    String?
-  createdAt    DateTime  @default(now())
-  posts        Post[]
-  likes        Like[]
-  comments     Comment[]
-  followers    Follow[]  @relation("following")
-  following    Follow[]  @relation("follower")
+  id                  Int       @id @default(autoincrement())
+  name                String
+  email               String    @unique
+  passwordHash        String
+  bio                 String?
+  avatarUrl           String?
+  createdAt           DateTime  @default(now())
+  resetToken          String?
+  resetTokenExpiresAt DateTime?
+  posts               Post[]
+  likes               Like[]
+  comments            Comment[]
+  followers           Follow[]  @relation("following")
+  following           Follow[]  @relation("follower")
 }
 
 model Post {
   id          Int       @id @default(autoincrement())
   content     String
   officialUrl String
+  modalidade  String?
+  nivel       String?
   userId      Int
   createdAt   DateTime  @default(now())
   user        User      @relation(fields: [userId], references: [id])

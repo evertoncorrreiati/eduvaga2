@@ -3,9 +3,15 @@ import prisma from '../prisma';
 
 export const createPost = async (req: Request, res: Response) => {
   try {
-    const { content, officialUrl, userId } = req.body;
+    const { content, officialUrl, modalidade, nivel, userId } = req.body;
     const post = await prisma.post.create({
-      data: { content, officialUrl, userId: Number(userId) },
+      data: {
+        content,
+        officialUrl,
+        modalidade: modalidade || null,
+        nivel: nivel || null,
+        userId: Number(userId)
+      },
       include: { user: { select: { id: true, name: true } } }
     });
     res.status(201).json(post);
@@ -16,7 +22,14 @@ export const createPost = async (req: Request, res: Response) => {
 
 export const getFeed = async (req: Request, res: Response) => {
   try {
+    const { modalidade, nivel } = req.query;
+
+    const where: any = {}
+    if (modalidade) where.modalidade = modalidade
+    if (nivel) where.nivel = nivel
+
     const posts = await prisma.post.findMany({
+      where,
       orderBy: { createdAt: 'desc' },
       include: {
         user: { select: { id: true, name: true } },
