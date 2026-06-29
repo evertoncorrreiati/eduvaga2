@@ -34,7 +34,7 @@
         Bem-vindo de volta, {{ user.name }}
       </div>
       <h1>Como você prefere estudar?</h1>
-      <p class="subtitle">Escolha a modalidade que melhor se encaixa na sua rotina</p>
+      
 
       <div class="cards">
         <div class="card" :class="{ selected: selected === 'Presencial' }" @click="selectModalidade('Presencial')">

@@ -5,6 +5,7 @@ import { register, login, getProfile, forgotPassword, resetPassword } from './co
 import { createPost, getFeed, likePost, commentPost, updatePost, deletePost } from './controllers/postController';
 import { followUser } from './controllers/followController';
 import { upload, uploadAvatar, removeAvatar } from './controllers/uploadController';
+import { authMiddleware } from './middleware/authMiddleware';
 
 dotenv.config();
 
@@ -12,27 +13,25 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Rotas de usuário
+// Rotas públicas (não precisam de login)
 app.post('/auth/register', register);
 app.post('/auth/login', login);
 app.post('/auth/forgot-password', forgotPassword);
 app.post('/auth/reset-password', resetPassword);
+app.get('/feed', getFeed);
 app.get('/users/:id', getProfile);
 
-// Rotas de avatar
-app.post('/users/:id/avatar', upload.single('avatar'), uploadAvatar);
-app.delete('/users/:id/avatar', removeAvatar);
+// Rotas protegidas (precisam de token JWT)
+app.post('/users/:id/avatar', authMiddleware, upload.single('avatar'), uploadAvatar);
+app.delete('/users/:id/avatar', authMiddleware, removeAvatar);
 
-// Rotas de posts
-app.post('/posts', createPost);
-app.get('/feed', getFeed);
-app.post('/posts/like', likePost);
-app.post('/posts/comment', commentPost);
-app.put('/posts/:id', updatePost);
-app.delete('/posts/:id', deletePost);
+app.post('/posts', authMiddleware, createPost);
+app.post('/posts/like', authMiddleware, likePost);
+app.post('/posts/comment', authMiddleware, commentPost);
+app.put('/posts/:id', authMiddleware, updatePost);
+app.delete('/posts/:id', authMiddleware, deletePost);
 
-// Rotas de follow
-app.post('/follow', followUser);
+app.post('/follow', authMiddleware, followUser);
 
 app.get('/', (req, res) => {
   res.json({ message: 'EduVaga API funcionando!' });

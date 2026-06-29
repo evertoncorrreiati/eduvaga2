@@ -34,13 +34,13 @@ const showPassword = ref(false)
 
 const cadastrar = async () => {
   try {
-    const response = await fetch('http://localhost:3000/api/auth/register', {
+    const response = await fetch('http://localhost:3000/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome: nome.value, email: email.value, senha: senha.value })
+      body: JSON.stringify({ name: nome.value, email: email.value, password: senha.value })
     })
     if (response.ok) {
-      router.push('/login')
+      router.push('/')
     } else {
       alert('Erro ao cadastrar. Tente novamente.')
     }
