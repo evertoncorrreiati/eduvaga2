@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { register, login, getProfile, forgotPassword, resetPassword } from './controllers/userController';
 import { createPost, getFeed, likePost, commentPost } from './controllers/postController';
 import { followUser } from './controllers/followController';
+import { upload, uploadAvatar, removeAvatar } from './controllers/uploadController';
 
 dotenv.config();
 
@@ -17,6 +18,10 @@ app.post('/auth/login', login);
 app.post('/auth/forgot-password', forgotPassword);
 app.post('/auth/reset-password', resetPassword);
 app.get('/users/:id', getProfile);
+
+// Rotas de avatar
+app.post('/users/:id/avatar', upload.single('avatar'), uploadAvatar);
+app.delete('/users/:id/avatar', removeAvatar);
 
 // Rotas de posts
 app.post('/posts', createPost);
