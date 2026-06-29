@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { register, login, getProfile, forgotPassword, resetPassword } from './controllers/userController';
-import { createPost, getFeed, likePost, commentPost } from './controllers/postController';
+import { createPost, getFeed, likePost, commentPost, updatePost, deletePost } from './controllers/postController';
 import { followUser } from './controllers/followController';
 import { upload, uploadAvatar, removeAvatar } from './controllers/uploadController';
 
@@ -28,6 +28,8 @@ app.post('/posts', createPost);
 app.get('/feed', getFeed);
 app.post('/posts/like', likePost);
 app.post('/posts/comment', commentPost);
+app.put('/posts/:id', updatePost);
+app.delete('/posts/:id', deletePost);
 
 // Rotas de follow
 app.post('/follow', followUser);

@@ -75,4 +75,43 @@ export const commentPost = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ error: 'Erro ao comentar' });
   }
-}
+};
+
+export const updatePost = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { content, officialUrl, modalidade, nivel, userId } = req.body;
+
+    const post = await prisma.post.findUnique({ where: { id: Number(id) } });
+    if (!post) return res.status(404).json({ error: 'Post não encontrado' });
+    if (post.userId !== Number(userId)) return res.status(403).json({ error: 'Sem permissão' });
+
+    const updated = await prisma.post.update({
+      where: { id: Number(id) },
+      data: { content, officialUrl, modalidade, nivel },
+      include: { user: { select: { id: true, name: true } } }
+    });
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao editar post' });
+  }
+};
+
+export const deletePost = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body;
+
+    const post = await prisma.post.findUnique({ where: { id: Number(id) } });
+    if (!post) return res.status(404).json({ error: 'Post não encontrado' });
+    if (post.userId !== Number(userId)) return res.status(403).json({ error: 'Sem permissão' });
+
+    await prisma.like.deleteMany({ where: { postId: Number(id) } });
+    await prisma.comment.deleteMany({ where: { postId: Number(id) } });
+    await prisma.post.delete({ where: { id: Number(id) } });
+
+    res.json({ message: 'Post excluído' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao excluir post' });
+  }
+};
